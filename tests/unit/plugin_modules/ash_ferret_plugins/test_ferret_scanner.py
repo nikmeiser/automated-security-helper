@@ -149,6 +149,27 @@ class TestFerretScanScannerUnsupportedOptions:
         assert "Unsupported option 'extract_text'" in str(exc_info.value)
         assert "Text extraction mode is not supported" in str(exc_info.value)
 
+    def test_unsupported_option_preprocess_only_raises_error(self):
+        """Test that using 'preprocess_only' option raises an error."""
+        with pytest.raises(ValueError) as exc_info:
+            FerretScannerConfigOptions(preprocess_only=True)
+
+        assert "Unsupported option 'preprocess_only'" in str(exc_info.value)
+
+    def test_unsupported_option_pre_commit_mode_raises_error(self):
+        """Test that using 'pre_commit_mode' option raises an error."""
+        with pytest.raises(ValueError) as exc_info:
+            FerretScannerConfigOptions(pre_commit_mode=True)
+
+        assert "Unsupported option 'pre_commit_mode'" in str(exc_info.value)
+
+    def test_unsupported_option_list_profiles_raises_error(self):
+        """Test that using 'list_profiles' option raises an error."""
+        with pytest.raises(ValueError) as exc_info:
+            FerretScannerConfigOptions(list_profiles=True)
+
+        assert "Unsupported option 'list_profiles'" in str(exc_info.value)
+
     def test_all_unsupported_options_documented(self):
         """Test that all unsupported options have documentation."""
         for option, message in UNSUPPORTED_FERRET_OPTIONS.items():
@@ -300,6 +321,50 @@ class TestFerretScannerConfigProcessing:
             (arg for arg in extra_args if arg.key == "--enable-preprocessors"), None
         )
         assert preprocessors_arg is None
+
+    def test_process_respect_gitignore_option(self, mock_plugin_context):
+        """Test respect_gitignore option processing."""
+        config = FerretScannerConfig(
+            options=FerretScannerConfigOptions(respect_gitignore=True)
+        )
+
+        scanner = FerretScanScanner(context=mock_plugin_context, config=config)
+        scanner._process_config_options()
+
+        extra_args = scanner.args.extra_args
+        gitignore_arg = next(
+            (arg for arg in extra_args if arg.key == "--respect-gitignore"), None
+        )
+        assert gitignore_arg is not None
+
+    def test_process_disable_ip_types_option(self, mock_plugin_context):
+        """Test disable_ip_types option processing."""
+        config = FerretScannerConfig(
+            options=FerretScannerConfigOptions(disable_ip_types="copyright,patent")
+        )
+
+        scanner = FerretScanScanner(context=mock_plugin_context, config=config)
+        scanner._process_config_options()
+
+        extra_args = scanner.args.extra_args
+        ip_types_arg = next(
+            (arg for arg in extra_args if arg.key == "--disable-ip-types"), None
+        )
+        assert ip_types_arg is not None
+        assert ip_types_arg.value == "copyright,patent"
+
+    def test_quiet_always_passed(self, mock_plugin_context, default_ferret_config):
+        """Test that --quiet is always passed to ferret-scan."""
+        scanner = FerretScanScanner(
+            context=mock_plugin_context, config=default_ferret_config
+        )
+        scanner._process_config_options()
+
+        extra_args = scanner.args.extra_args
+        quiet_arg = next(
+            (arg for arg in extra_args if arg.key == "--quiet"), None
+        )
+        assert quiet_arg is not None
 
     def test_process_config_options_no_duplication_on_repeated_calls(
         self, mock_plugin_context, default_ferret_config

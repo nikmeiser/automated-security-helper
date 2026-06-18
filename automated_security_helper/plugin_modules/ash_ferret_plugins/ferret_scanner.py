@@ -111,6 +111,10 @@ UNSUPPORTED_FERRET_OPTIONS = {
     # Debug/verbose - use ferret_debug/ferret_verbose instead
     "debug": "Use 'ferret_debug: true' instead. Bare 'debug' is blocked to avoid confusion with ASH's --debug flag.",
     "verbose": "Use 'ferret_verbose: true' instead. Bare 'verbose' is blocked to avoid confusion with ASH's --verbose flag.",
+    # Utility modes - no SARIF output
+    "preprocess_only": "Preprocess-only mode produces no scan results. Use ferret-scan CLI directly for text extraction.",
+    "pre_commit_mode": "Pre-commit mode is not applicable in ASH integration. ASH manages output formatting and exit codes. Use ASH's own pre-commit hook instead.",
+    "list_profiles": "List-profiles mode produces no scan results. Use 'ferret-scan --list-profiles' directly.",
 }
 
 
@@ -270,6 +274,26 @@ class FerretScannerConfigOptions(ScannerOptionsBase):
             "This controls ferret-scan's own output, not ASH logging."
         ),
     ] = False
+
+    # Gitignore integration (v1.6.0+)
+    respect_gitignore: Annotated[
+        bool,
+        Field(
+            description="Honor .gitignore files when scanning. Opt-in because "
+            ".gitignore commonly hides files with high secret-scanning value "
+            "(.env, *.pem, credentials/)."
+        ),
+    ] = False
+
+    # IP sub-type control (v1.5.3+)
+    disable_ip_types: Annotated[
+        str | None,
+        Field(
+            description="Comma-separated list of IP sub-types to disable: "
+            "copyright, patent, trademark, trade_secret, internal_url. "
+            "Useful for codebases with standard copyright headers on every file."
+        ),
+    ] = None
 
     # Version control options
     tool_version: Annotated[
@@ -610,8 +634,23 @@ class FerretScanScanner(ScannerPluginBase[FerretScannerConfig]):
         if options.ferret_verbose:
             self.args.extra_args.append(ToolExtraArg(key="--verbose", value=None))
 
+        # Respect gitignore (v1.6.0+)
+        if options.respect_gitignore:
+            self.args.extra_args.append(
+                ToolExtraArg(key="--respect-gitignore", value=None)
+            )
+
+        # Disable IP sub-types (v1.5.3+)
+        if options.disable_ip_types:
+            self.args.extra_args.append(
+                ToolExtraArg(key="--disable-ip-types", value=options.disable_ip_types)
+            )
+
         # Always disable color in ferret-scan output (ASH handles formatting)
         self.args.extra_args.append(ToolExtraArg(key="--no-color", value=None))
+
+        # Always suppress progress output (ASH captures stderr; progress is noise)
+        self.args.extra_args.append(ToolExtraArg(key="--quiet", value=None))
 
         return super()._process_config_options()
 

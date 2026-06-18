@@ -104,6 +104,9 @@ The following ferret-scan CLI options are **NOT supported** in the ASH plugin an
 | `enable_redaction`, `redaction_*`, `memory_scrub` | Redaction is post-processing, not scanning. |
 | `generate_suppressions`, `show_suppressed`, `suppressions_file` | ASH manages suppressions centrally. |
 | `extract_text` | Text extraction mode is a utility, not scanning. |
+| `preprocess_only` | Produces no scan results (utility mode). Use ferret-scan CLI directly. |
+| `pre_commit_mode` | ASH manages output formatting and exit codes. Use ASH's own pre-commit hook. |
+| `list_profiles` | Produces no scan results (utility mode). Use `ferret-scan --list-profiles` directly. |
 
 ### Security Warning: show_match Option
 
@@ -149,7 +152,7 @@ scanners:
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `confidence_levels` | string | `"all"` | Confidence levels: `high`, `medium`, `low`, or combinations |
-| `checks` | string | `"all"` | Specific checks to run (comma-separated) |
+| `checks` | string | `"all"` | Specific checks to run (comma-separated): CREDIT_CARD, EMAIL, INTELLECTUAL_PROPERTY, IP_ADDRESS, METADATA, PASSPORT, PERSON_NAME, PHONE, SECRETS, SOCIAL_MEDIA, SSN, VIN |
 | `recursive` | bool | `true` | Recursively scan directories |
 | `config_file` | string | `null` | Path to custom Ferret YAML config file |
 | `use_default_config` | bool | `true` | Use the default config bundled with this plugin |
@@ -157,6 +160,8 @@ scanners:
 | `exclude_patterns` | list | `[]` | Patterns to exclude from scanning (directory names or file patterns, e.g., `.venv`, `*.log`) |
 | `show_match` | bool | `false` | ⚠️ Display matched text in findings (see security warning above) |
 | `enable_preprocessors` | bool | `true` | Enable text extraction from documents |
+| `respect_gitignore` | bool | `false` | Honor .gitignore files when scanning (opt-in; .gitignore often hides high-value targets like .env) |
+| `disable_ip_types` | string | `null` | Comma-separated IP sub-types to disable: `copyright`, `patent`, `trademark`, `trade_secret`, `internal_url` |
 | `tool_version` | string | `null` | Version constraint for ferret-scan (e.g., `>=1.0.0,<2.0.0`) |
 | `skip_version_check` | bool | `false` | Skip version compatibility check (use with caution) |
 

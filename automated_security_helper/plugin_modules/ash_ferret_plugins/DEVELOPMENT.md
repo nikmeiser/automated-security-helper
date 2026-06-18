@@ -102,7 +102,7 @@ tests/
         └── ash_ferret_plugins/
             ├── __init__.py          # Test package marker
             ├── conftest.py          # Shared test fixtures
-            └── test_ferret_scanner.py  # Unit tests (66 tests)
+            └── test_ferret_scanner.py  # Unit tests (73 tests)
 
 docs/
 └── content/
@@ -202,6 +202,7 @@ def validate_no_unsupported_options(cls, data: Any) -> Any:
 |---------|-----------------|
 | Output format | Always SARIF (hardcoded via `--format sarif`) |
 | Color output | Always `--no-color` (ASH handles formatting) |
+| Progress output | Always `--quiet` (ASH captures stderr; progress is noise in logs) |
 
 ### Managed by ASH Framework (not plugin-controlled)
 
@@ -223,6 +224,8 @@ def validate_no_unsupported_options(cls, data: Any) -> Any:
 | `exclude_patterns` | Patterns to exclude from scanning | `[]` |
 | `show_match` | Display matched text in findings | `false` |
 | `enable_preprocessors` | Extract text from documents | `true` |
+| `respect_gitignore` | Honor .gitignore files when scanning (opt-in) | `false` |
+| `disable_ip_types` | Comma-separated IP sub-types to disable: copyright, patent, trademark, trade_secret, internal_url | None |
 | `ferret_debug` | Enable ferret-scan's own debug logging (preprocessing/validation flow) | `false` |
 | `ferret_verbose` | Enable ferret-scan's own verbose output (detailed finding info) | `false` |
 | `tool_version` | Version constraint for installation | `">=0.1.0,<2.0.0"` |
@@ -295,7 +298,8 @@ def test_unsupported_option_new_option_raises_error(self):
 | Web server | `web`, `port` | Not applicable for batch scanning |
 | Redaction | `enable_redaction`, `redaction_*`, `memory_scrub` | Post-processing, not scanning |
 | Suppressions | `generate_suppressions`, `show_suppressed`, `suppressions_file` | ASH manages centrally |
-| Utility modes | `extract_text` | Not a scanning mode |
+| Utility modes | `extract_text`, `preprocess_only`, `list_profiles` | No SARIF output produced |
+| Pre-commit | `pre_commit_mode` | ASH manages output formatting and exit codes |
 | Logging | `debug`, `verbose` | Use `ferret_debug`/`ferret_verbose` instead (avoids confusion with ASH flags) |
 
 ## Testing

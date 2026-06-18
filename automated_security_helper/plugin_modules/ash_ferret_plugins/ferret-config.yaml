@@ -12,7 +12,7 @@ defaults:
   format: text # Output format: text, json, csv, yaml, junit, gitlab-sast
   confidence_levels: all # Confidence levels to display: high, medium, low, or combinations
   checks:
-    all # Specific checks to run: CREDIT_CARD, EMAIL, INTELLECTUAL_PROPERTY, IP_ADDRESS, METADATA, PASSPORT, PERSON_NAME, PHONE, SECRETS, SOCIAL_MEDIA, SSN, or combinations
+    all # Specific checks to run: CREDIT_CARD, EMAIL, INTELLECTUAL_PROPERTY, IP_ADDRESS, METADATA, PASSPORT, PERSON_NAME, PHONE, SECRETS, SOCIAL_MEDIA, SSN, VIN, or combinations
     # GENAI_DISABLED: COMPREHEND_PII also available with --enable-genai
   verbose: false # Display detailed information for each finding
   debug: false # Enable debug logging to show preprocessing and validation flow
@@ -108,6 +108,16 @@ redaction:
 validators:
   # Intellectual property validator configuration
   intellectual_property:
+    # Disabled IP sub-types
+    # Use this to skip detection of specific intellectual property categories.
+    # This is useful when your codebase legitimately contains certain IP markers
+    # (e.g., copyright notices on all source files) that would generate excessive findings.
+    #
+    # Valid values: copyright, patent, trademark, trade_secret, internal_url
+    # Example: Disable copyright detection for codebases with standard copyright headers
+    # disabled_types:
+    #   - copyright
+    #
     # Internal company URL patterns to detect
     # IMPORTANT: Internal URL detection requires explicit configuration
     # Configure patterns specific to your organization's infrastructure
